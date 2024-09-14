@@ -1,11 +1,24 @@
-(ns congest.gest
-  (:require [overtone.at-at :as at]))
-
-(def pool (at/mk-pool))
-
-(defn schedule-greet [] (at/every 1000 #(println "hello") pool))
-(defn release [] (at/stop-and-reset-pool! pool))
+(ns congest.gest)
 
 
-(schedule-greet)
-(release)
+(defn after [delay task]
+  (let [condition (promise)]
+    (future
+      (cond (not (= :stop (deref condition delay :timeout)))
+            (task)))
+    (fn []
+      (deliver condition :stop))))
+
+(defn at-every [interval task]
+  (let [condition (promise)]
+    (future
+      (loop []
+        (task)
+        (when-not (= :stop (deref condition interval :timeout))
+          (recur))))
+    (fn [] (deliver condition :stop))))
+
+(def schedule {:at-every at-every
+               :after after})
+
+(defn create-scheduler [type] ((keyword type) schedule))

@@ -19,8 +19,5 @@
   (reset! *server nil))
 (start)
 (stop)
+
 (println @*server)
-
-
-
-(tap> " hello ")
