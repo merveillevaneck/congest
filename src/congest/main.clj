@@ -18,8 +18,6 @@
     (@*server)
     (println " No server running on port " PORT))
   (reset! *server nil))
-(start)
-(stop)
 
 (println @*server)
 
