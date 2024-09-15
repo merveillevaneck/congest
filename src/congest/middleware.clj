@@ -20,11 +20,10 @@
 (defn handle-response [response]
   (println "here")
   (let [resbody (:body response)
-        has-body (some? resbody)
-        parse? (and (coll? resbody) has-body)]
-    (if parse?
+        has-body (some? resbody)]
+    (if has-body
       (assoc response :body (stringify resbody))
-      response)))
+      nil)))
 
 ;; Wraps a handler in parse-body and stringify.
 ;; Processes the request body into a keywords-map.
