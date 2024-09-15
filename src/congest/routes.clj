@@ -42,6 +42,8 @@
        }
       )))
 
+(defn stop-all [_] (s/stop-all))
+
 (defn service-status [_]
   {:status 200
    :body (s/get-service-status)})
@@ -52,4 +54,4 @@
   (GET "/scheduled" [] (mw/wrap service-status))
   (POST "/register" [] (mw/wrap register-service))
   (POST "/deregister" [] (mw/wrap deregister-service))
-  (POST "/stop-all" [] (mw/wrap (fn [_] (s/stop-all)))))
+  (POST "/stop-all" [] (mw/wrap stop-all)))
