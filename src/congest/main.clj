@@ -1,12 +1,24 @@
 (ns congest.main
   (:require [org.httpkit.server :as http]
             [congest.env :refer [env]]
-            [congest.routes :as r]))
+            [congest.routes :as r]
+            [clojure.pprint :as pp]
+            [jsonista.core :as json]
+            [congest.service :as s]
+            [congest.schema :as is]))
+
+;; TESTING <== its working!!!!!!
+(s/start-service s/mock-service)
+(s/stop-service (:id s/mock-service))
+(s/stop-all)
+
+(r/register-service s/mock-service)
+(r/deregister-service s/mock-service)
+;; END TESTING
 
 (def PORT (:PORT env))
 
 (def *server (atom nil))
-
 
 (defn start [] (if (nil? @*server)
                  (reset! *server (http/run-server r/app {:port PORT}))
@@ -21,3 +33,9 @@
 (stop)
 
 (println @*server)
+
+(defn -main [& args]
+  (pp/pprint (str "Starting server with options " (json/write-value-as-string args) "...."))
+  (start))
+
+(-main "some" "options")

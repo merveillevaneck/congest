@@ -1,34 +1,53 @@
+;; SORRY BRO THIS FILE IS A MESS
 (ns congest.routes
   (:require [compojure.core :refer [GET POST defroutes] :as comp]
-            [congest.gest :as g]
-            [clojure.pprint :as pp]
             [org.httpkit.client :as client]
-            [jsonista.core :as json]))
+            [congest.service :as s]
+            [congest.schema :as is]
+            [congest.middleware :as mw]))
 
-
-(defn parse [body] (json/read-value body json/keyword-keys-object-mapper))
 
 (def url "https://random-data-api.com/api/v3/projects/5eb844a0-736e-43a8-8359-41ac7ca7c0b9?api_key=CTMHkU8YolE7YfhdhVvK5g")
 
-(defn home [req]
-  (let [{:keys [status error body]} @(client/get url)]
-    {:status status :body body :error error :headers {"content-type" "application/json"}}))
+(defn home [_]
+  (let [{:keys [status error body]}
+        @(client/get url)]
+    {:status status
+     :body body
+     :error error
+     :headers {"content-type" "application/json"}}))
 
-(home {:body nil})
+(defn deregister-service [body]
+  (if (is/id-payload? body)
+    (let [id (:id body)]
+      (if (s/running? id)
+        (do 
+          (s/stop-service id)
+{:status 200 :body {:message (str "Service with id " id " started successfully!")}}
+          )
+        {:status 404 :body {:message (str "Service with id " id " no found")}}))
+    { :status 400 :body {:message "Invalid payload provided: Missing 'id'"} }
+  ))
 
-(defn greet [req]
-  (let [{:keys [body]} req bod (parse body)]
-    (pp/pprint bod)
-    {:status 200
-     :body {:message "Schedule received"}})
-  ;; (g/schedule-greet)
-  )
-(defn release [_] (g/release-all) {:status 200 :body "messages stopped"})
+(defn register-service [service]
+  (if (not (is/service? service))
+    {:status 400 :body {:message "Invalid payload: missing or omitted fields" }}
+    (let [result (s/start-service service)]
+      {
+       :status 200
+       :body (if (coll? result)
+               {:message "service started successfully" :data result}
+               {:message result})
+       }
+      )))
 
-(greet {:body nil})
-(release {:body nil})
+(defn service-status [_]
+  {:status 200
+   :body (s/get-service-status)})
+
+(register-service {:body s/mock-service})
 (defroutes app
-  (GET "/" [] home)
-  (GET "/schedule" [] greet)
-  (POST "/schedule" [] greet)
-  (GET "/stop" [] release))
+  (GET "/" [] (mw/wrap home))
+  (GET "/schedule" [] (mw/wrap service-status))
+  (POST "/schedule" [] (mw/wrap register-service))
+  (POST "/stop-all" [] (mw/wrap (fn [_] (s/stop-all)))))
