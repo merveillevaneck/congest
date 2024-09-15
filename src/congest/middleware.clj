@@ -19,11 +19,8 @@
 ;; checking if it is a collection first
 (defn handle-response [response]
   (println "here")
-  (let [resbody (:body response)
-        has-body (some? resbody)]
-    (if has-body
-      (assoc response :body (stringify resbody))
-      nil)))
+  (let [resbody (:body response)]
+    (assoc response :body (stringify resbody))))
 
 ;; Wraps a handler in parse-body and stringify.
 ;; Processes the request body into a keywords-map.
@@ -32,4 +29,4 @@
 (defn wrap [handler]
   (fn [req]
     (handle-response
-     (handler (parse-body (:body req))))))
+     (handler (parse-body req)))))

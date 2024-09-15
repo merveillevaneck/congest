@@ -45,6 +45,7 @@
 (defn stop-all [_] (s/stop-all))
 
 (defn validate-service [service]
+  (tap> service)
   {:status 200
    :body {:valid (is/service? service)}})
 
