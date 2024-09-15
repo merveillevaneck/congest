@@ -2,19 +2,8 @@
   (:require [org.httpkit.server :as http]
             [congest.env :refer [env]]
             [congest.routes :as r]
-            [clojure.pprint :as pp]
-            [jsonista.core :as json]
-            [congest.service :as s]
-            [congest.schema :as is]))
+            [clojure.pprint :as pp]))
 
-;; TESTING <== its working!!!!!!
-(s/start-service s/mock-service)
-(s/stop-service (:id s/mock-service))
-(s/stop-all)
-
-(r/register-service s/mock-service)
-(r/deregister-service s/mock-service)
-;; END TESTING
 
 (def PORT (:PORT env))
 
@@ -35,7 +24,7 @@
 (println @*server)
 
 (defn -main [& args]
-  (pp/pprint (str "Starting server with options " (json/write-value-as-string args) "...."))
+  (pp/pprint (str "Starting server with options " args "...."))
   (start))
 
-(-main "some" "options")
+(-main "some" "options" "other")

@@ -21,10 +21,11 @@
   (if (is/id-payload? body)
     (let [id (:id body)]
       (if (s/running? id)
-        (do 
+        (do
           (s/stop-service id)
-{:status 200 :body {:message (str "Service with id " id " started successfully!")}}
-          )
+          {:status 200
+           :body {:message 
+                  (str "Service with id " id " started successfully!")}})
         {:status 404 :body {:message (str "Service with id " id " no found")}}))
     { :status 400 :body {:message "Invalid payload provided: Missing 'id'"} }
   ))
@@ -48,6 +49,7 @@
 (register-service {:body s/mock-service})
 (defroutes app
   (GET "/" [] (mw/wrap home))
-  (GET "/schedule" [] (mw/wrap service-status))
-  (POST "/schedule" [] (mw/wrap register-service))
+  (GET "/scheduled" [] (mw/wrap service-status))
+  (POST "/register" [] (mw/wrap register-service))
+  (POST "/deregister" [] (mw/wrap deregister-service))
   (POST "/stop-all" [] (mw/wrap (fn [_] (s/stop-all)))))
