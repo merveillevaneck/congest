@@ -25,4 +25,3 @@
   (pp/pprint (str "Starting server with options " args "...."))
   (start))
 
-(-main "some" "options" "other")
